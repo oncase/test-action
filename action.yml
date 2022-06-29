@@ -1,13 +1,35 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
+name: "postman test action"
+description: "Runs a Postman collection"
 inputs:
-  milliseconds:  # id of input
-    description: 'number of milliseconds to wait'
+  postman_api_key: # id of input
+    description: "postman api key"
     required: true
-    default: '1000'
+    default: ""
+  postman_collection_id: # id of input
+    description: "postman collection id"
+    required: true
+    default: ""
+  postman_env_id: # id of input
+    description: "postman environment id"
+    required: true
+    default: ""
+  slack_msg_webhook: # id of input
+    description: "slack webhook url"
+    required: true
+    default: ""
+  url_list_filename: # id of input
+    description: "filename for the url json list"
+    required: true
+    default: ""
+  continue_if_fail: # id of input
+    description: "throws an error if any tests fail"
+    required: true
+    default: ""
+  continue_if_test_missing: # id of input
+    description: "throws an error if any urls are not covered by tests"
+    required: true
+    default: ""
 outputs:
-  time: # output will be available to future steps
-    description: 'The current time after waiting'
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: "node16"
+  main: "dist/index.js"
