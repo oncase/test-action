@@ -5,6 +5,10 @@ inputs:
     description: "postman api key"
     required: true
     default: ""
+  postman_api_url: # id of input
+    description: "postman api url"
+    required: true
+    default: ""
   postman_collection_id: # id of input
     description: "postman collection id"
     required: true

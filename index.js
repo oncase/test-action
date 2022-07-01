@@ -1,12 +1,8 @@
-console.log("test");
-
 const core = require("@actions/core");
 const axios = require("axios");
 const fs = require("fs");
 const newman = require("newman");
 const { exit } = require("process");
-
-core.debug("test2");
 
 function getDataFromPostman(url) {
   const config = {
@@ -24,8 +20,6 @@ function getDataFromPostman(url) {
   }).then((res) => res.data);
 }
 
-core.debug("test3");
-
 async function run() {
   //data from postman
   const collectionUrl =
@@ -38,13 +32,13 @@ async function run() {
     "environments/" +
     core.getInput("postman_env_id");
 
-  core.debug("Getting collection and environment from postman");
+  console.log("Getting collection and environment from postman");
   const collection = await getDataFromPostman(collectionUrl);
   const postmanEnv = await getDataFromPostman(envUrl);
 
-  core.debug("Done!");
+  console.log("Done!");
 
-  core.debug("Checking missing tests");
+  console.log("Checking missing tests");
   //missing tests check
   const testUrls = collection.collection.item.map((item) =>
     item.request.url.raw.replace("{{host}}", "")
@@ -64,16 +58,16 @@ async function run() {
 
   if (missingTestUrls.length) {
     const missingTestMsg = `Urls ${missingTestUrls} have no registered tests`;
-    core.debug(missingTestMsg);
+    console.log(missingTestMsg);
     if (core.getInput("continue_if_test_missing") !== "true") {
       core.setFailed(missingTestMsg);
       exit(-1);
     }
   }
 
-  core.debug("Done!");
+  console.log("Done!");
 
-  core.debug("Running tests");
+  console.log("Running tests");
   //running tests
   newman.run(
     {
@@ -89,7 +83,7 @@ async function run() {
     },
     function (err, summary) {
       if (err) {
-        core.debug(err);
+        console.log(err);
         core.setFailed(err);
         exit(-1);
       }
@@ -97,14 +91,14 @@ async function run() {
       if (summary.run.failures.length) {
         const testNames = summary.run.failures.map((item) => item.source.name);
         const failedTestsMsg = `Tests ${testNames} have failed`;
-        core.debug(failedTestsMsg);
+        console.log(failedTestsMsg);
 
         if (core.getInput("continue_if_fail") !== "true") {
           core.setFailed(failedTestsMsg);
           exit(-1);
         }
       }
-      core.debug("collection run complete!");
+      console.log("collection run complete!");
       core.setOutput("output", "");
     }
   );
