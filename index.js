@@ -43,7 +43,7 @@ async function run() {
   const testUrls = collection.collection.item.map((item) =>
     item.request.url.raw.replace("{{host}}", "")
   );
-
+  console.log("backend/" + core.getInput("url_list_filename"));
   const apiUrls = JSON.parse(
     fs.readFileSync("backend/" + core.getInput("url_list_filename"), "utf8")
   );
