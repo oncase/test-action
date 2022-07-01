@@ -4,6 +4,9 @@ const fs = require("fs");
 const newman = require("newman");
 const { exit } = require("process");
 
+//require needed for packaging to work
+const reporter = require("@oncase/newman-reporter-slackmsg");
+
 function getDataFromPostman(url) {
   const config = {
     headers: {
