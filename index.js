@@ -1,4 +1,4 @@
-core.debug("test");
+console.log("test");
 
 const core = require("@actions/core");
 const axios = require("axios");
