@@ -3,7 +3,6 @@ const axios = require("axios");
 const fs = require("fs");
 const newman = require("newman");
 const { exit } = require("process");
-const cp = require("child_process");
 
 function getDataFromPostman(url) {
   const config = {
@@ -45,13 +44,8 @@ async function run() {
     item.request.url.raw.replace("{{host}}", "")
   );
 
-  const result = cp
-    .execSync(`cd backend && ls`, { env: process.env })
-    .toString();
-  console.log(result);
-
   const apiUrls = JSON.parse(
-    fs.readFileSync(core.getInput("backend/url_list_filename"), "utf8")
+    fs.readFileSync("backend/" + core.getInput("url_list_filename"), "utf8")
   );
 
   const apiListKey = Object.keys(apiUrls)[0];
