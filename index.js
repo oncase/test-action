@@ -4,7 +4,6 @@ const fs = require("fs");
 const newman = require("newman");
 const { exit } = require("process");
 const cp = require("child_process");
-const wait = require("./wait");
 
 function getDataFromPostman(url) {
   const config = {
@@ -51,7 +50,6 @@ async function run() {
     .toString();
   console.log(result);
 
-  await wait(10000);
   const apiUrls = JSON.parse(
     fs.readFileSync(core.getInput("backend/url_list_filename"), "utf8")
   );
