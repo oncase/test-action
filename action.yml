@@ -30,6 +30,8 @@ inputs:
     required: true
     default: ""
 outputs:
+  output: # output will be available to future steps
+    description: ""
 runs:
   using: "node16"
   main: "dist/index.js"

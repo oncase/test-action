@@ -85,6 +85,7 @@ async function run() {
         if (core.getInput("continue_if_fail") !== "true") exit(-1);
       }
       console.log("collection run complete!");
+      core.setOutput("output", "");
     }
   );
 }
