@@ -1,8 +1,12 @@
+console.log("test");
+
 const core = require("@actions/core");
 const axios = require("axios");
 const fs = require("fs");
 const newman = require("newman");
 const { exit } = require("process");
+
+console.log("test2");
 
 function getDataFromPostman(url) {
   const config = {
@@ -19,6 +23,8 @@ function getDataFromPostman(url) {
     config,
   }).then((res) => res.data);
 }
+
+console.log("test3");
 
 async function run() {
   //data from postman
