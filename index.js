@@ -45,14 +45,14 @@ async function run() {
     item.request.url.raw.replace("{{host}}", "")
   );
 
-  const result = cp.execSync(`pwd`, { env: process.env }).toString();
+  const result = cp.execSync(`cd backend`, { env: process.env }).toString();
   console.log(result);
 
   const result2 = cp.execSync(`ls`, { env: process.env }).toString();
   console.log(result2);
 
   const apiUrls = JSON.parse(
-    fs.readFileSync(core.getInput("url_list_filename"), "utf8")
+    fs.readFileSync(core.getInput("backend/url_list_filename"), "utf8")
   );
 
   const apiListKey = Object.keys(apiUrls)[0];
