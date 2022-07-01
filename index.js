@@ -1,4 +1,4 @@
-console.log("test");
+core.debug("test");
 
 const core = require("@actions/core");
 const axios = require("axios");
@@ -6,7 +6,7 @@ const fs = require("fs");
 const newman = require("newman");
 const { exit } = require("process");
 
-console.log("test2");
+core.debug("test2");
 
 function getDataFromPostman(url) {
   const config = {
@@ -24,7 +24,7 @@ function getDataFromPostman(url) {
   }).then((res) => res.data);
 }
 
-console.log("test3");
+core.debug("test3");
 
 async function run() {
   //data from postman
@@ -38,13 +38,13 @@ async function run() {
     "environments/" +
     core.getInput("postman_env_id");
 
-  console.log("Getting collection and environment from postman");
+  core.debug("Getting collection and environment from postman");
   const collection = await getDataFromPostman(collectionUrl);
   const postmanEnv = await getDataFromPostman(envUrl);
 
-  console.log("Done!");
+  core.debug("Done!");
 
-  console.log("Checking missing tests");
+  core.debug("Checking missing tests");
   //missing tests check
   const testUrls = collection.collection.item.map((item) =>
     item.request.url.raw.replace("{{host}}", "")
@@ -64,13 +64,16 @@ async function run() {
 
   if (missingTestUrls.length) {
     const missingTestMsg = `Urls ${missingTestUrls} have no registered tests`;
-    console.error(missingTestMsg);
-    if (core.getInput("continue_if_test_missing") !== "true") exit(-1);
+    core.debug(missingTestMsg);
+    if (core.getInput("continue_if_test_missing") !== "true") {
+      core.setFailed(missingTestMsg);
+      exit(-1);
+    }
   }
 
-  console.log("Done!");
+  core.debug("Done!");
 
-  console.log("Running tests");
+  core.debug("Running tests");
   //running tests
   newman.run(
     {
@@ -86,18 +89,22 @@ async function run() {
     },
     function (err, summary) {
       if (err) {
-        console.error(err);
+        core.debug(err);
+        core.setFailed(err);
         exit(-1);
       }
 
       if (summary.run.failures.length) {
         const testNames = summary.run.failures.map((item) => item.source.name);
         const failedTestsMsg = `Tests ${testNames} have failed`;
-        console.error(failedTestsMsg);
+        core.debug(failedTestsMsg);
 
-        if (core.getInput("continue_if_fail") !== "true") exit(-1);
+        if (core.getInput("continue_if_fail") !== "true") {
+          core.setFailed(failedTestsMsg);
+          exit(-1);
+        }
       }
-      console.log("collection run complete!");
+      core.debug("collection run complete!");
       core.setOutput("output", "");
     }
   );
