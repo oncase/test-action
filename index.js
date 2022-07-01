@@ -43,7 +43,7 @@ async function run() {
   const testUrls = collection.collection.item.map((item) =>
     item.request.url.raw.replace("{{host}}", "")
   );
-  console.log("backend/" + core.getInput("url_list_filename"));
+
   const apiUrls = JSON.parse(
     fs.readFileSync("backend/" + core.getInput("url_list_filename"), "utf8")
   );
@@ -76,8 +76,7 @@ async function run() {
       reporters: "@oncase/slackmsg",
       reporter: {
         "@oncase/slackmsg": {
-          webhookurl:
-            "https://hooks.slack.com/services/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",
+          webhookurl: core.getInput("slack_msg_webhook"),
         },
       },
     },
