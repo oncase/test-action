@@ -32,9 +32,13 @@ async function run() {
     "environments/" +
     core.getInput("postman_env_id");
 
+  console.log("Getting collection and environment from postman");
   const collection = await getDataFromPostman(collectionUrl);
   const postmanEnv = await getDataFromPostman(envUrl);
 
+  console.log("Done!");
+
+  console.log("Checking missing tests");
   //missing tests check
   const testUrls = collection.collection.item.map((item) =>
     item.request.url.raw.replace("{{host}}", "")
@@ -58,6 +62,9 @@ async function run() {
     if (core.getInput("continue_if_test_missing") !== "true") exit(-1);
   }
 
+  console.log("Done!");
+
+  console.log("Running tests");
   //running tests
   newman.run(
     {
