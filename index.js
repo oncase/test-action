@@ -7,6 +7,11 @@ const { exit } = require("process");
 //require needed for packaging to work
 const reporter = require("@oncase/newman-reporter-slackmsg");
 
+try {
+  reporter.dale();
+} catch (err) {
+  console.log();
+}
 function getDataFromPostman(url) {
   const config = {
     headers: {
