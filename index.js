@@ -5,13 +5,6 @@ const newman = require("newman");
 const { exit } = require("process");
 const cp = require("child_process");
 
-const result = cp
-  .execSync(`npm install @oncase/newman-reporter-slackmsg`, {
-    env: process.env,
-  })
-  .toString();
-console.log(result);
-
 function getDataFromPostman(url) {
   const config = {
     headers: {
@@ -77,17 +70,42 @@ async function run() {
 
   console.log("Running tests");
 
+  fs.writeFileSync(
+    "collection_test.json",
+    JSON.stringify(collection.collection),
+    "utf8"
+  );
+
+  fs.writeFileSync(
+    "env_test.json",
+    JSON.stringify(postmanEnv.environment),
+    "utf8"
+  );
+
+  cp.execSync(`npm install -g newman @oncase/newman-reporter-slackmsg`, {
+    env: process.env,
+  }).toString();
+
+  const result = cp
+    .execSync(
+      `newman run collection_test.json -e env_test.json  --suppress-exit-code -r @oncase/slackmsg,cli --reporter-@oncase/slackmsg-webhookurl ${core.getInput(
+        "slack_msg_webhook"
+      )}`,
+      { env: process.env }
+    )
+    .toString();
+
+  fs.unlinkSync("env_test.json");
+
+  fs.unlinkSync("collection_test.json");
+
+  console.log(result);
+
   //running tests
   newman.run(
     {
       collection: collection.collection,
       environment: postmanEnv.environment,
-      reporters: "@oncase/slackmsg",
-      reporter: {
-        "@oncase/slackmsg": {
-          webhookurl: core.getInput("slack_msg_webhook"),
-        },
-      },
     },
     function (err, summary) {
       if (err) {
