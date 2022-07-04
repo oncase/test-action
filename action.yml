@@ -25,14 +25,22 @@ inputs:
     description: "filename for the url json list"
     required: true
     default: ""
+  host_url: # id of input
+    description: "url to the host application server (replaces the host variable in postman)"
+    required: true
+    default: ""
   continue_if_fail: # id of input
     description: "throws an error if any tests fail"
-    required: true
+    required: false
     default: ""
   continue_if_test_missing: # id of input
     description: "throws an error if any urls are not covered by tests"
-    required: true
+    required: false
     default: ""
+  request_timeout: # id of input
+    description: "timeout amount for each request"
+    required: false
+    default: "29000"
 outputs:
   output: # output will be available to future steps
     description: ""

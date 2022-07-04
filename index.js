@@ -21,6 +21,65 @@ function getDataFromPostman(url) {
   }).then((res) => res.data);
 }
 
+function runCLITests(collection, env) {
+  fs.writeFileSync("collection_test.json", JSON.stringify(collection), "utf8");
+
+  fs.writeFileSync("env_test.json", JSON.stringify(env), "utf8");
+
+  cp.execSync(`npm install -g newman @oncase/newman-reporter-slackmsg`, {
+    env: process.env,
+  }).toString();
+
+  const result = cp
+    .execSync(
+      `newman run collection_test.json -e env_test.json --timeout-request ${core.getInput(
+        "request_timeout"
+      )} --suppress-exit-code -r @oncase/slackmsg --reporter-@oncase/slackmsg-webhookurl ${core.getInput(
+        "slack_msg_webhook"
+      )}`,
+      { env: process.env }
+    )
+    .toString();
+
+  fs.unlinkSync("env_test.json");
+
+  fs.unlinkSync("collection_test.json");
+
+  console.log(result);
+}
+
+function runSdkTests(collection, env) {
+  newman.run(
+    {
+      collection: collection,
+      environment: env,
+      timeoutRequest: parseInt(core.getInput("request_timeout")),
+      reporter: "cli",
+    },
+    function (err, summary) {
+      if (err) {
+        console.log(err);
+        core.setFailed(err);
+        exit(-1);
+      }
+
+      if (summary.run.failures.length) {
+        const testNames = summary.run.failures.map((item) => item.source.name);
+        const failedTestsMsg = `Tests ${testNames} have failed`;
+        console.warn(failedTestsMsg);
+
+        if (core.getInput("continue_if_fail") !== "true") {
+          core.setFailed(failedTestsMsg);
+          exit(-1);
+        }
+      }
+
+      console.log("collection run complete!");
+      core.setOutput("output", "");
+    }
+  );
+}
+
 async function run() {
   //data from postman
   const collectionUrl =
@@ -40,7 +99,7 @@ async function run() {
   console.log("Done!");
 
   console.log("Checking missing tests");
-  //missing tests check
+
   const testUrls = collection.collection.item.map((item) =>
     item.request.url.raw.replace("{{host}}", "")
   );
@@ -59,7 +118,7 @@ async function run() {
 
   if (missingTestUrls.length) {
     const missingTestMsg = `Urls ${missingTestUrls} have no registered tests`;
-    console.log(missingTestMsg);
+    console.warn(missingTestMsg);
     if (core.getInput("continue_if_test_missing") !== "true") {
       core.setFailed(missingTestMsg);
       exit(-1);
@@ -70,64 +129,17 @@ async function run() {
 
   console.log("Running tests");
 
-  fs.writeFileSync(
-    "collection_test.json",
-    JSON.stringify(collection.collection),
-    "utf8"
-  );
+  postmanEnv.environment.values = postmanEnv.environment.values.map((item) => {
+    if (item.key === "host") {
+      return {
+        ...item,
+        value: item.value.replace("{{host}}", core.getInput("host_url")),
+      };
+    } else return item;
+  });
 
-  fs.writeFileSync(
-    "env_test.json",
-    JSON.stringify(postmanEnv.environment),
-    "utf8"
-  );
-
-  cp.execSync(`npm install -g newman @oncase/newman-reporter-slackmsg`, {
-    env: process.env,
-  }).toString();
-
-  const result = cp
-    .execSync(
-      `newman run collection_test.json -e env_test.json  --suppress-exit-code -r @oncase/slackmsg,cli --reporter-@oncase/slackmsg-webhookurl ${core.getInput(
-        "slack_msg_webhook"
-      )}`,
-      { env: process.env }
-    )
-    .toString();
-
-  fs.unlinkSync("env_test.json");
-
-  fs.unlinkSync("collection_test.json");
-
-  console.log(result);
-
-  //running tests
-  newman.run(
-    {
-      collection: collection.collection,
-      environment: postmanEnv.environment,
-    },
-    function (err, summary) {
-      if (err) {
-        console.log(err);
-        core.setFailed(err);
-        exit(-1);
-      }
-
-      if (summary.run.failures.length) {
-        const testNames = summary.run.failures.map((item) => item.source.name);
-        const failedTestsMsg = `Tests ${testNames} have failed`;
-        console.log(failedTestsMsg);
-
-        if (core.getInput("continue_if_fail") !== "true") {
-          core.setFailed(failedTestsMsg);
-          exit(-1);
-        }
-      }
-      console.log("collection run complete!");
-      core.setOutput("output", "");
-    }
-  );
+  runCLITests(collection.collection, postmanEnv.environment);
+  runSdkTests(collection.collection, postmanEnv.environment);
 }
 
 run();
