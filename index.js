@@ -3,15 +3,15 @@ const axios = require("axios");
 const fs = require("fs");
 const newman = require("newman");
 const { exit } = require("process");
+const cp = require("child_process");
 
-//require needed for packaging to work
-const reporter = require("@oncase/newman-reporter-slackmsg");
+const result = cp
+  .execSync(`npm install @oncase/newman-reporter-slackmsg`, {
+    env: process.env,
+  })
+  .toString();
+console.log(result);
 
-try {
-  reporter.dale();
-} catch (err) {
-  console.log();
-}
 function getDataFromPostman(url) {
   const config = {
     headers: {
@@ -76,6 +76,7 @@ async function run() {
   console.log("Done!");
 
   console.log("Running tests");
+
   //running tests
   newman.run(
     {
