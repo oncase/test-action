@@ -64,12 +64,19 @@ function runSdkTests(collection, env) {
       }
 
       if (summary.run.failures.length) {
-        const testNames = summary.run.failures.map((item) => item.source.name);
-        const failedTestsMsg = `Tests ${testNames} have failed`;
-        console.warn(failedTestsMsg);
+        const failedTests = summary.run.failures.map((item) => ({
+          name: item.source.name,
+          error: item.error.message,
+        }));
+
+        console.warn("FAILURES");
+
+        for (let test of failedTests) {
+          console.warn(test.name + ": " + test.error);
+        }
 
         if (core.getInput("continue_if_fail") !== "true") {
-          core.setFailed(failedTestsMsg);
+          core.setFailed("Build stopped due to failed testss");
           exit(-1);
         }
       }
